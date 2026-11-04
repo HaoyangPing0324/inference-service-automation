@@ -1,0 +1,14 @@
+/workspace/
+/.skill-example-results-backup-*/
+
+__pycache__/
+*.py[cod]
+*.whl
+
+# Keep lightweight Markdown manifests and placeholders, but do not commit
+# raw profiler captures or generated result payloads.
+**/profiling_results/**
+!**/profiling_results/**/
+!**/profiling_results/**/*.md
+
+**/coordination/transfer-failures/

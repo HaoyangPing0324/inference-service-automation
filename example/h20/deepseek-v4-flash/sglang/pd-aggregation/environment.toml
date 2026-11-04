@@ -1,0 +1,57 @@
+# 推理服务自动化工程配置。
+# 请填写双引号中的空值；不要在本文件中写入密码、Token 或私钥。
+# 多台服务器时，复制一组 [[server.hosts]]。
+# host_models_dir 会自动挂载到容器 /models。
+# 本文件属于当前硬件/模型/框架/部署方法组合，与脚本和结果放在同一目录。
+# 已位于四级工程目录内；不会再追加四级子目录。
+
+version = 1
+
+[server]
+# 硬件平台；不在这里填写机器数或卡数，部署拓扑由匹配的官方教程确定。
+type = "NVIDIA H20"
+
+# 用于生成目录名的短别名，例如："h20"、"910c"、"moore"
+alias = "h20"
+
+# 只读设备状态命令，例如："nvidia-smi" 或 "npu-smi info"
+operations_command = "nvidia-smi"
+
+[[server.hosts]]
+# 机器的逻辑名称，例如："gpu01"
+name = "prefill-node"
+
+# 已配置好的 SSH 目标或别名，例如："prefill-node"、"decode-node"
+address = "prefill-node"
+
+[[server.hosts]]
+name = "decode-node"
+address = "decode-node"
+
+# 多机时，紧接着复制完整段并分别填写。示例：
+# [[server.hosts]]
+# name = "gpu02"
+# address = "node-b"
+#
+# name 是当前实验内唯一的逻辑名；address 必须能直接用于 ssh <address>。
+# 使用跳板机时，请填写已在 SSH 配置中封装好跳转规则的最终目标别名。
+# hosts 只列出可供选择的机器；每机使用多少卡由官方教程和资源预检共同确定。
+
+[project]
+# 远端工程根目录；实验会上传到 workspace_dir/title
+workspace_dir = "/srv/inference"
+
+# 远端宿主机上的模型根目录，例如："/maasjfs/hf_models/Private"
+host_models_dir = "/srv/models"
+
+# Docker 容器内的完整模型目录，例如："/models/Qwen/Qwen3-30B-A3B"
+model_path = "/models/Deepseek/DeepSeek-V4-Flash-0731"
+
+# 用于目录名和实验标题的模型名，例如："qwen3-30b-a3b"
+model_name = "deepseek-v4-flash"
+
+# 推理框架，例如："sglang" 或 "vllm"
+framework = "sglang"
+
+# 部署方式，例如："single"、"dual" 或 "pd"
+deployment = "pd-aggregation"

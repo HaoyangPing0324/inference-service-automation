@@ -1,0 +1,7 @@
+interface:
+  display_name: "推理服务自动化"
+  short_description: "按官方教程完成推理部署、压测、Profiling 与分析"
+  default_prompt: "使用 $inference-service-automation，按主Agent、每卡型调度Agent及design/execute/analyze三角色组织实验；design远端编辑，本地仅回收干净交付，遵循角色读取边界、最小启动和单Markdown复现规则。"
+
+policy:
+  allow_implicit_invocation: true

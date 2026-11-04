@@ -1,0 +1,60 @@
+# 工作区服务器清单；新增硬件时追加完整 [[servers]] 条目。
+# 仅保存环境与候选机器，不保存密码、token、私钥或设备数量。
+version = 1
+
+
+###############################################################
+[[servers]]
+type = "NVIDIA H20"                # 硬件平台
+alias = "h20"                      # 目录别名
+operations_command = "nvidia-smi"  # 设备状态命令
+
+[[servers.hosts]]
+name = "h20-1"                     # 机器逻辑名
+address = "h20-1"                  # 已配置的 SSH 目标
+
+[[servers.hosts]]
+name = "h20-2"                     # 机器逻辑名
+address = "h20-2"                  # 已配置的 SSH 目标
+###############################################################
+
+###############################################################
+[[servers]]
+type = "Ascend 910C"                # 硬件平台
+alias = "910c"                      # 目录别名
+operations_command = "npu-smi info"  # 设备状态命令
+
+[[servers.hosts]]
+name = "npu01"                     # 机器逻辑名
+address = "npu01"                  # 已配置的 SSH 目标
+
+[[servers.hosts]]
+name = "npu02"                     # 机器逻辑名
+address = "npu02"                  # 已配置的 SSH 目标
+
+[[servers.hosts]]
+name = "npu03"                     # 机器逻辑名
+address = "npu03"                  # 已配置的 SSH 目标
+
+[[servers.hosts]]
+name = "npu04"                     # 机器逻辑名
+address = "npu04"                  # 已配置的 SSH 目标
+###############################################################
+
+###############################################################
+[[servers]]
+type = "Moore"                # 硬件平台
+alias = "s5000"                      # 目录别名
+operations_command = "mthreads"  # 设备状态命令
+
+[[servers.hosts]]
+name = "node-1"                     # 机器逻辑名
+address = "node-1"                  # 已配置的 SSH 目标
+
+[[servers.hosts]]
+name = "node-2"                     # 机器逻辑名
+address = "node-2"                  # 已配置的 SSH 目标
+###############################################################
+
+# 增加硬件：复制完整 [[servers]] 及其 [[servers.hosts]] 段。
+# 同种硬件增加机器：只在所属条目内追加 [[servers.hosts]]。

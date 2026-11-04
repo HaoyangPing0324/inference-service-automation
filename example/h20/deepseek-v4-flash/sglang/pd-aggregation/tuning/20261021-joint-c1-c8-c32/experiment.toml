@@ -1,0 +1,49 @@
+version = 1  # 配置格式版本，保持 1
+
+# 用户实验设计表：只填写模型、并行、缓存、显存和测试参数。
+# joint-v1审阅参数；用户明确要求应用后才由design更新远端新版本，本表不会自动生效。
+# 显式覆盖：并行度填整数，后端/数据类型填受当前版本支持的字符串。
+
+[runtime]
+framework         = "sglang"                   # 推理框架
+framework_version = "0.5.21"                   # 框架版本，应与镜像一致
+image             = "lmsysorg/sglang:v0.5.21"  # 服务和客户端使用的容器镜像
+
+[model]
+checkpoint           = "DeepSeek-V4-Flash-0731"  # 精确模型检查点名称
+weight_format        = "mixed-fp8-fp4"           # 实际权重量化格式；改此项不会转换权重
+expert_weight_format = "fp4"                     # MoE 专家权重格式，须匹配实际文件
+moe_runner_backend   = "flashinfer_mxfp4"        # MoE 专家计算后端
+
+[parallelism]
+topology             = "pd-disaggregation"  # 服务部署拓扑
+prefill_replicas     = 1                    # Prefill 服务副本数
+decode_replicas      = 1                    # Decode 服务副本数
+tensor_parallel_size = 4                    # 每个服务副本的张量并行度 TP
+total_devices        = 8                    # 由拓扑和并行设计核对的总卡数
+
+[disaggregation]
+transfer_backend = "mooncake"  # PD 间 KV cache 传输后端
+rdma_enabled     = true        # 是否使用 RDMA；还需相应网络和容器配置
+
+[cache]
+prefix_cache_enabled  = false  # 是否启用前缀缓存；首轮压测关闭
+chunked_prefill_size  = 8192   # Prefill候选：减少16K输入的分块数；decode仍4096
+swa_full_tokens_ratio = 0.1    # SWA 与 full-attention token 池容量比例
+
+[speculative]
+enabled     = true                                 # 是否启用推测解码
+algorithm   = "DSPARK"                             # 推测解码算法
+draft_model = "checkpoint-built-in-draft-weights"  # Draft 模型；内置权重使用说明标记
+
+[memory]
+prefill_static_fraction = 0.88  # 候选：为更大chunk额外预留约1.91GiB，不是OOM实测结论
+decode_static_fraction  = 0.80  # Decode 静态显存预算比例
+
+[workload]
+input_length       = 16384                 # 目标输入 token 数 ISL
+output_length      = 2048                  # 目标输出 token 数 OSL
+concurrencies      = [1, 2, 4, 8, 16, 32]  # Benchmark 并发档位
+request_multiplier = 5                     # Benchmark请求倍数；本轮没有候选Profiler采集
+warmup_requests    = 2                     # 正式 workload 前的预热请求数
+

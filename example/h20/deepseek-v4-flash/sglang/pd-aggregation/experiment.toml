@@ -1,0 +1,63 @@
+version = 1  # 配置格式版本，保持 1
+
+# 用户实验设计表：只填写模型、并行、缓存、显存和测试参数。
+# 用户明确应用后，由design在远端更新experiment.env并发布新版本；本地修改不会自动生效。
+# 参考值用于展示完整类型；新任务按目标版本/检查点核验，不将本示例当默认。
+# 显式覆盖：并行度填整数，后端/数据类型填受当前版本支持的字符串。
+
+[runtime]
+framework         = "sglang"                   # 推理框架
+framework_version = "0.5.21"                   # 框架版本，应与镜像一致
+image             = "lmsysorg/sglang:v0.5.21"  # 服务和客户端使用的容器镜像
+
+[model]
+checkpoint           = "DeepSeek-V4-Flash-0731"  # 精确模型检查点名称
+weight_format        = "mixed-fp8-fp4"           # 实际权重量化格式；改此项不会转换权重
+expert_weight_format = "fp4"                     # MoE 专家权重格式，须匹配实际文件
+moe_runner_backend   = "flashinfer_mxfp4"        # MoE 专家计算后端
+attention_backend    = "dsv4"                    # 检查点后端参考值，执行前核对解析
+kv_cache_dtype       = "fp8_e4m3"                # KV参考格式，不等于权重精度
+
+[parallelism]
+topology             = "pd-disaggregation"  # 服务部署拓扑
+prefill_replicas     = 1                    # Prefill 服务副本数
+decode_replicas      = 1                    # Decode 服务副本数
+tensor_parallel_size = 4                    # 每个服务副本的张量并行度 TP
+data_parallel        = 1                    # DP参考值，执行前核对
+expert_parallel      = 1                    # EP参考值，执行前核对
+pipeline_parallel    = 1                    # PP参考值，执行前核对
+total_devices        = 8                    # 由拓扑和并行设计核对的总卡数
+
+[disaggregation]
+transfer_backend = "mooncake"  # PD 间 KV cache 传输后端
+rdma_enabled     = true        # 是否使用 RDMA；还需相应网络和容器配置
+
+[cache]
+prefix_cache_enabled  = false  # 是否启用前缀缓存；首轮压测关闭
+chunked_prefill_size  = 4096   # 分块 prefill 的 token 预算
+swa_full_tokens_ratio = 0.1    # SWA 与 full-attention token 池容量比例
+
+[speculative]
+enabled     = true                                 # 是否启用推测解码
+algorithm   = "DSPARK"                             # 推测解码算法
+draft_model = "checkpoint-built-in-draft-weights"  # Draft 模型；内置权重使用说明标记
+
+[memory]
+prefill_static_fraction = 0.90  # Prefill 静态显存预算比例，不是计算利用率
+decode_static_fraction  = 0.80  # Decode 静态显存预算比例
+
+[workload]
+input_length       = 16384                 # 目标输入 token 数 ISL
+output_length      = 2048                  # 目标输出 token 数 OSL
+concurrencies      = [1, 2, 4, 8, 16, 32]  # Benchmark 并发档位
+request_multiplier = 5                     # Benchmark 请求倍数；Profiler time模式由时长决定请求数
+warmup_requests    = 2                     # 正式 workload 前的预热请求数
+
+[profiling]
+protocol        = "time"  # 默认连续混合时间窗口；steps仅用于显式复现历史协议
+prerun_seconds  = 0       # 可选最短预运行秒数；进入采集还须完成4C请求
+prerun_completed_multiplier  = 4  # 采前完成至少4×C正式请求
+postrun_completed_multiplier = 1  # 停止采集后再完成至少1×C，确保窗口在负载中间
+capture_seconds = 15       # 所有角色开始确认后，保持采集的秒数
+max_requests    = 100000  # 请求安全上限；触顶即失败，不自动扩预算
+warmup_requests    = 2        # Profiler独立固定预热2个请求

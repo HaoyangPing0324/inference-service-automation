@@ -1,0 +1,46 @@
+version = 1  # 示例设计格式
+
+# 示例设计值，不代表新模型的官方默认或本轮实测。新任务须重新核对版本与适用项。
+# 用户明确应用后由design更新远端新版本；本地修改不会自动生效。
+[runtime]
+framework         = "sglang"                   # 推理框架
+framework_version = "0.5.21"                   # 示例版本
+image             = "lmsysorg/sglang:v0.5.21"  # 示例镜像
+
+[model]
+checkpoint          = "GLM-5.3-Flash"  # 精确检查点，需新任务核验
+moe_runner_backend  = "deep_gemm"      # 旧示例显式参数
+dsa_prefill_backend = "tilelang"       # 旧示例显式参数
+dsa_decode_backend  = "tilelang"       # 旧示例显式参数
+kv_cache_dtype      = "bfloat16"       # 旧示例显式参数
+
+[parallelism]
+topology             = "single"  # 单服务
+tensor_parallel_size = 8         # 旧示例显式TP
+expert_parallel      = 8         # 旧示例显式EP
+total_devices        = 8         # 示例资源规模
+
+[cache]
+prefix_cache_enabled = false  # 首轮无前缀缓存，执行前验证CLI支持
+
+[speculative]
+enabled = false  # 未配置draft或推测解码；不填无关字段
+
+[memory]
+static_fraction = 0.75  # 旧示例显式比例，不是计算利用率
+
+[workload]
+input_length       = 16384                 # ISL
+output_length      = 2048                  # OSL
+concurrencies      = [1, 2, 4, 8, 16, 32]  # 完整基线档位；调优仅选1/8/32
+request_multiplier = 5                     # 每档N=5C
+warmup_requests    = 2                     # 预热2次
+
+[profiling]
+protocol        = "time"  # 默认连续混合时间窗口；steps仅用于显式复现历史协议
+prerun_seconds  = 0       # 可选最短预运行秒数；进入采集还须完成4C请求
+prerun_completed_multiplier  = 4  # 采前完成至少4×C正式请求
+postrun_completed_multiplier = 1  # 停止采集后再完成至少1×C，确保窗口在负载中间
+capture_seconds = 15       # 所有角色开始确认后，保持采集的秒数
+max_requests    = 100000  # 请求安全上限；触顶即失败，不自动扩预算
+warmup_requests    = 2        # 预热2

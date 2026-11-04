@@ -1,0 +1,58 @@
+version = 1  # 配置格式版本，保持 1
+
+# 用户实验设计表：只填写模型、并行、缓存、显存和测试参数。
+# 修改后由 AI 同步 experiment.env、校验并按需重启/重跑；本表不会自动生效。
+# 正式生成时扩展全部适用设计项，填入目标版本核实后的具体默认值，并注释来源。
+# 展示框架默认值不要求额外传入 CLI；模板字段不是覆盖范围上限。
+# 显式覆盖：并行度填整数，后端/数据类型填受当前版本支持的字符串。
+# 空值和 0 是初始化占位，正式运行前按官方配置核对填写。
+
+[runtime]
+framework         = {{FRAMEWORK_SH}}  # 推理框架
+framework_version = ""                # 框架版本，应与镜像一致
+image             = ""                # 服务和客户端使用的容器镜像
+
+[model]
+checkpoint           = {{MODEL_NAME_SH}}  # 精确模型检查点名称
+weight_format        = ""                 # 实际权重量化格式；改此项不会转换权重
+expert_weight_format = ""                 # MoE 专家权重格式，须匹配实际文件
+moe_runner_backend   = ""                 # MoE 专家计算后端
+attention_backend    = ""                 # Attention 后端，核实当前模型生效值后填写
+kv_cache_dtype       = ""                 # KV cache 数据类型，与权重精度分开配置
+
+[parallelism]
+topology             = {{DEPLOYMENT_SH}}  # 服务部署拓扑
+tensor_parallel_size = 0                  # 每个服务副本的张量并行度 TP，待填
+data_parallel        = 0                  # DP 初始化占位；正式生成时填核实的整数默认值
+expert_parallel      = 0                  # EP 初始化占位；正式生成时填核实的整数默认值
+pipeline_parallel    = 0                  # PP 初始化占位；正式生成时填核实的整数默认值
+total_devices        = 0                  # 由拓扑和并行设计核对的总卡数
+
+[cache]
+prefix_cache_enabled  = false  # 是否启用前缀缓存；首轮压测关闭
+chunked_prefill_size  = 0      # 分块 prefill 的 token 预算
+swa_full_tokens_ratio = 0.0    # SWA 与 full-attention token 池容量比例
+
+[speculative]
+enabled     = false  # 是否启用推测解码
+algorithm   = ""     # 推测解码算法
+draft_model = ""     # Draft 模型；内置权重使用说明标记
+
+[memory]
+static_fraction = 0.0  # 静态显存预算比例，不是 GPU 计算利用率
+
+[workload]
+input_length       = 16384                 # 目标输入 token 数 ISL
+output_length      = 2048                  # 目标输出 token 数 OSL
+concurrencies      = [1, 2, 4, 8, 16, 32]  # Benchmark 并发档位
+request_multiplier = 5                     # Benchmark 请求倍数；Profiler time模式由时长决定请求数
+warmup_requests    = 2                     # 正式 workload 前的预热请求数
+
+[profiling]
+protocol        = "time"  # 默认连续混合时间窗口；steps仅用于显式复现历史协议
+prerun_seconds  = 0       # 可选最短预运行秒数；进入采集还须完成4C请求
+prerun_completed_multiplier  = 4  # 采前完成至少4×C正式请求
+postrun_completed_multiplier = 1  # 停止采集后再完成至少1×C，确保窗口在负载中间
+capture_seconds = 15       # 所有角色开始确认后，保持采集的秒数
+max_requests    = 100000  # 请求安全上限；触顶即失败，不自动扩预算
+warmup_requests    = 2        # Profiler独立固定预热2个请求

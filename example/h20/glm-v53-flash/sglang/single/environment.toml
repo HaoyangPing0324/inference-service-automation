@@ -1,0 +1,47 @@
+# 结构示例：single-node与/srv均为示意值，需按实际环境替换，不能直接执行。
+# 推理服务自动化工程配置。
+# 请填写双引号中的空值。
+# 不要在本文件中写入密码、token、私钥或其他凭据。
+# 多台服务器时，复制一组 [[server.hosts]]。
+# host_models_dir 会自动挂载到容器 /models。
+# 本文件属于单个实验，放在 <workspace>/<硬件>/<模型>/<框架>/<部署方式>/environment.toml。
+# 四级目录由 AI 先确认并建立；同目录内继续生成脚本和结果，不再追加四级子目录。
+# AI 预填已确认的硬件别名、模型名、框架和部署方法，其余空值由用户填写。
+version = 1
+
+[server]
+# 硬件平台，例如："NVIDIA H20" 或 "Huawei Ascend 910C"
+# 不在这里填写机器数或卡数；部署拓扑由匹配的官方教程确定。
+type = "NVIDIA H20"
+# 用于生成目录名的短别名，例如："910c"、"h20"、"moore"
+alias = "h20"
+# 只读设备状态命令，例如："npu-smi info" 或 "nvidia-smi"
+operations_command = "nvidia-smi"
+
+[[server.hosts]]
+# 机器的逻辑名称，例如："gpu01"
+name = "single-node"
+# 已配置好的 SSH 目标或别名，例如："gpu-node-01"、"cluster-a-node-01"
+address = "single-node"
+# 多机时，紧接着复制完整段并分别填写。示例：
+# [[server.hosts]]
+# name = "gpu02"
+# address = "gpu-node-02"
+#
+# name 是当前实验内唯一的逻辑名；address 会作为不透明目标原样交给 ssh。
+# 它可以在用户 SSH 配置中表示直连、单级跳板或多级跳板；Skill 不自行改写连接路径。
+# hosts 只列出可供选择的机器；每机使用多少卡由官方教程和资源预检共同确定。
+
+[project]
+# 远端工作目录；生成项目会放在 workspace_dir/title 下
+workspace_dir = "/srv/inference"
+# 宿主机上的模型根目录，例如："/maasjfs/hf_models/Private"
+host_models_dir = "/srv/models"
+# 容器内的完整模型目录，例如："/models/Qwen/Qwen3-30B-A3B"
+model_path = "/models/GLM/GLM-5.3-Flash"
+# 用于目录和标题的模型名，例如："qwen3-30b-a3b"
+model_name = "glm-v53-flash"
+# 推理框架，例如："vllm" 或 "sglang"
+framework = "sglang"
+# 部署方式，例如："single"、"dual" 或 "pd"
+deployment = "single"
