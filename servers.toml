@@ -54,6 +54,53 @@ address = "node-1"                  # 已配置的 SSH 目标
 [[servers.hosts]]
 name = "node-2"                     # 机器逻辑名
 address = "node-2"                  # 已配置的 SSH 目标
+
+[[servers.hosts]]
+name = "moore-1"                    # 机器逻辑名
+address = "moore-1"                 # 已配置的 SSH 目标
+
+[[servers.hosts]]
+name = "moore-2"                    # 机器逻辑名
+address = "moore-2"                 # 已配置的 SSH 目标
+
+[[servers.hosts]]
+name = "moore-3"                    # 机器逻辑名
+address = "moore-3"                 # 已配置的 SSH 目标
+
+[[servers.hosts]]
+name = "moore-4"                    # 机器逻辑名
+address = "moore-4"                 # 已配置的 SSH 目标
+
+[[servers.hosts]]
+name = "moore-5"                    # 机器逻辑名
+address = "moore-5"                 # 已配置的 SSH 目标
+
+[[servers.hosts]]
+name = "moore-6"                    # 机器逻辑名
+address = "moore-6"                 # 已配置的 SSH 目标
+
+[[servers.hosts]]
+name = "moore-7"                    # 机器逻辑名
+address = "moore-7"                 # 已配置的 SSH 目标
+
+[[servers.hosts]]
+name = "moore-8"                    # 机器逻辑名
+address = "moore-8"                 # 已配置的 SSH 目标
+
+[[servers.hosts]]
+name = "moore-9"                    # 机器逻辑名
+address = "moore-9"                 # 已配置的 SSH 目标
+###############################################################
+
+###############################################################
+[[servers]]
+type = "NVIDIA A800"                # 硬件平台
+alias = "a800"                      # 目录别名
+operations_command = "nvidia-smi"  # 设备状态命令
+
+[[servers.hosts]]
+name = "a800"                       # 机器逻辑名
+address = "a800"                    # 已配置的 SSH 目标
 ###############################################################
 
 # 增加硬件：复制完整 [[servers]] 及其 [[servers.hosts]] 段。
